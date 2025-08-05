@@ -263,11 +263,21 @@ const ARScene: React.FC<ARSceneProps> = (props) => {
 
   // Handle pinch to zoom
   const onPinch = (pinchState: ViroPinchStateTypes, scaleFactor: number, source: ImageSourcePropType) => {
-    if (pinchState === ViroPinchStateTypes.PINCH_START || pinchState === ViroPinchStateTypes.PINCH_MOVE) {
-      // Calculate new scale but maintain aspect ratio
-      const newScale: [number, number, number] = [scale[0] * scaleFactor, scale[1] * scaleFactor, scale[2] * scaleFactor];
+    console.log(`Pinch event: state=${pinchState}, factor=${scaleFactor}`);
+    
+    // Respond to all pinch states for better responsiveness
+    if (pinchState === ViroPinchStateTypes.PINCH_START || 
+        pinchState === ViroPinchStateTypes.PINCH_MOVE || 
+        pinchState === ViroPinchStateTypes.PINCH_END) {
       
-      // Optional: Add min/max scale limits to prevent the model from getting too small or too large
+      // Calculate new scale but maintain aspect ratio
+      const newScale: [number, number, number] = [
+        scale[0] * scaleFactor, 
+        scale[1] * scaleFactor, 
+        scale[2] * scaleFactor
+      ];
+      
+      // Min/max scale limits to prevent the model from getting too small or too large
       const MIN_SCALE = 0.01;
       const MAX_SCALE = 0.5;
       
@@ -279,14 +289,23 @@ const ARScene: React.FC<ARSceneProps> = (props) => {
 
   // Handle drag to move
   const onDrag = (draggedToPosition: [number, number, number], source: ImageSourcePropType) => {
+    console.log(`Drag event: position=[${draggedToPosition}]`);
+    
     if (draggedToPosition) {
+      // Apply the position change immediately for better responsiveness
       setPosition(draggedToPosition);
     }
   };
 
   // Handle rotation
   const onRotate = (rotateState: ViroRotateStateTypes, rotationFactor: number, source: ImageSourcePropType) => {
-    if (rotateState === ViroRotateStateTypes.ROTATE_START || rotateState === ViroRotateStateTypes.ROTATE_MOVE) {
+    console.log(`Rotate event: state=${rotateState}, factor=${rotationFactor}`);
+    
+    // Respond to all rotation states for better responsiveness
+    if (rotateState === ViroRotateStateTypes.ROTATE_START || 
+        rotateState === ViroRotateStateTypes.ROTATE_MOVE || 
+        rotateState === ViroRotateStateTypes.ROTATE_END) {
+      
       const newRotation: [number, number, number] = [rotation[0], rotation[1] + rotationFactor, rotation[2]];
       setRotation(newRotation);
     }
@@ -305,13 +324,7 @@ const ARScene: React.FC<ARSceneProps> = (props) => {
         outerAngle={20}
         castsShadow={true}
       />
-      <ViroNode 
-        position={[0, -1, -3]}
-        onPinch={onPinch}
-        onRotate={onRotate}
-        dragType="FixedToWorld"
-        onDrag={onDrag}
-      >
+      <ViroNode position={[0, -1, -3]}>
         <ViroAmbientLight color="#ffffff" intensity={200}/>
         <ViroSpotLight
           innerAngle={5}
@@ -337,6 +350,10 @@ const ARScene: React.FC<ARSceneProps> = (props) => {
           rotation={rotation}
           materials={meshMaterials}
           highAccuracyEvents={true}
+          dragType="FixedToWorld"
+          onDrag={onDrag}
+          onPinch={onPinch}
+          onRotate={onRotate}
           onError={(event: NativeSyntheticEvent<any>) => {
             console.log('Model error:', event.nativeEvent);
             handleError(event);

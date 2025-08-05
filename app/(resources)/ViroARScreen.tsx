@@ -481,8 +481,8 @@ const ViroARScreen = () => {
       // Add debouncing timeout before navigation
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Use router.replace to match the navigation pattern from ModelFetchScreen
-      await router.replace('./ModelFetchScreen');
+      // Use router.back() instead of replace to properly handle the navigation stack
+      router.back();
     } catch (error) {
       console.error('Navigation error:', error);
     } finally {
@@ -509,6 +509,8 @@ const ViroARScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Custom back button removed to fix crash */}
+      
       {localModelUri && (
         <ViroARSceneNavigator
           autofocus={true}
@@ -536,7 +538,6 @@ const ViroARScreen = () => {
         />
       )}
 
-
     </View>
   );
 };
@@ -544,27 +545,7 @@ const ViroARScreen = () => {
 export default ViroARScreen;
 
 const styles = StyleSheet.create({
- /*  header: {
-    position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    paddingHorizontal: 20,
-  }, */
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 8,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  backButtonText: {
-    color: '#fff',
-    marginLeft: 8,
-    fontSize: 16,
-  },
+
 
   container: {
     flex: 1,
@@ -645,5 +626,10 @@ const styles = StyleSheet.create({
   buttonLabel: {
     color: '#fff',
     fontSize: 16,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

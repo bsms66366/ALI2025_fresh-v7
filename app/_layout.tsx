@@ -62,6 +62,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="(ar)" options={{ headerShown: false }} />
+        <Stack.Screen name="(resources)/ViroARScreen" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

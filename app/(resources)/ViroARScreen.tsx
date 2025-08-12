@@ -174,116 +174,124 @@ const LoadingIndicator: React.FC<{ progress?: number; message: string }> = ({ pr
 );
 
 // ARScene component
-const ARScene: React.FC<ARSceneProps> = (props) => {
-  const [modelLoaded, setModelLoaded] = useState(false);
-  const [meshMaterials, setMeshMaterials] = useState<string[]>([]);
-  const mounted = useRef(true);
+const ARScene = (props: ARSceneProps) => {
+  const { sceneNavigator, onError, onLoadStart, onLoadEnd } = props;
+  const modelUri = sceneNavigator?.viroAppProps?.modelUri || '';
+  const [position, setPosition] = useState<[number, number, number]>([0, -0.5, -1]);
+  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
+  const [scale, setScale] = useState<[number, number, number]>([0.1, 0.1, 0.1]);
+  const [materials, setMaterials] = useState<string[]>(['defaultMaterial']);
+  const [meshNames, setMeshNames] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Get initial scale for the current model
-  const INITIAL_SCALE = getModelScale(props.sceneNavigator.viroAppProps.modelUri);
+  // Double-tap reset state
+  const [lastTapTime, setLastTapTime] = useState(0);
+  const [initialScale, setInitialScale] = useState<[number, number, number]>([0.1, 0.1, 0.1]);
+  
+  // Pinch gesture tracking for better zoom detection
+  const [lastPinchFactor, setLastPinchFactor] = useState(1.0);
+  const [isPinching, setIsPinching] = useState(false);
 
   // Handle material assignment for different meshes
   const handleLoadMeshMaterials = (meshNames: string[]) => {
-    const { materialMappings = {} } = props.sceneNavigator.viroAppProps;
-    const materials = meshNames.map(meshName => 
-      materialMappings[meshName] || 'default' // Use default material if no mapping exists
-    );
-    setMeshMaterials(materials);
-    console.log('Mesh materials assigned:', materials);
+    const configuredMaterials = configureMeshMaterials(meshNames);
+    setMaterials(configuredMaterials);
   };
 
-
-
-
-
-  // State for model transformations
-  const [scale, setScale] = useState<[number, number, number]>(INITIAL_SCALE);
-  const [position, setPosition] = useState<[number, number, number]>([0, 0, 0]);
-  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
-
-  useEffect(() => {
-    return () => {
-      mounted.current = false;
-      // Clean up 3D object resources
-      if (props.sceneNavigator.viroAppProps.modelUri) {
-        setModelLoaded(false);
-        setScale(INITIAL_SCALE);
-        setPosition([0, 0, 0]);
-        setRotation([0, 0, 0]);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (modelLoaded) {
-      // Materials are loaded from the GLB file
-    }
-  }, [modelLoaded]);
-
   const handleError = (event: NativeSyntheticEvent<ViroErrorEvent>) => {
-    if (mounted.current) {
-      props.onError(event.nativeEvent);
-    }
+    console.error('AR Scene error:', event.nativeEvent);
+    onError(event.nativeEvent);
   };
 
   const handleLoadStart = () => {
-    if (mounted.current) {
-      props.onLoadStart();
-    }
+    console.log('Model load starting');
+    setIsLoading(true);
+    onLoadStart();
   };
 
   const handleLoadEnd = () => {
-    if (mounted.current) {
-      console.log('Model load complete');
-      
-      // Reset transformations
-      setScale(INITIAL_SCALE);
-      setPosition([0, 0, 0]);
-      setRotation([0, 0, 0]);
-      
-      // Configure materials and apply them
-      const materials = [
-        'muscleMaterial',
-        'cartilageMaterial',
-        'tissueMaterial'
-      ];
-      configureMeshMaterials();
-      setMeshMaterials(materials);
-      setModelLoaded(true);
-      
-      console.log({
-        modelUri: props.sceneNavigator.viroAppProps.modelUri,
-        materials: materials,
-        scale: INITIAL_SCALE
-      });
-      
-      props.onLoadEnd();
+    console.log('Model loaded successfully');
+    setIsLoading(false);
+    if (onLoadEnd) {
+      onLoadEnd();
+    }
+    
+    // Auto-configure materials after model loads
+    if (meshNames.length > 0) {
+      const configuredMaterials = configureMeshMaterials(meshNames);
+      setMaterials(configuredMaterials);
+    }
+    
+    // Apply model-specific scaling
+    const modelScale = getModelScale(modelUri);
+    if (modelScale) {
+      console.log(`Applying model-specific scale: ${modelScale}`);
+      setScale(modelScale);
+      setInitialScale(modelScale); // Store initial scale for reset
     }
   };
 
-  // Handle pinch to zoom
+  // Handle pinch to zoom with robust detection for both zoom-in and zoom-out
   const onPinch = (pinchState: ViroPinchStateTypes, scaleFactor: number, source: ImageSourcePropType) => {
-    console.log(`Pinch event: state=${pinchState}, factor=${scaleFactor}`);
+    console.log(`Pinch event: state=${pinchState}, factor=${scaleFactor}, current scale=${scale[0]}`);
     
-    // Respond to all pinch states for better responsiveness
-    if (pinchState === ViroPinchStateTypes.PINCH_START || 
-        pinchState === ViroPinchStateTypes.PINCH_MOVE || 
-        pinchState === ViroPinchStateTypes.PINCH_END) {
+    // Handle pinch start
+    if (pinchState === ViroPinchStateTypes.PINCH_START) {
+      // Check for double-tap reset
+      if (handleDoubleTapReset()) {
+        return; // Exit early if reset was triggered
+      }
       
-      // Calculate new scale but maintain aspect ratio
+      // Initialize pinch tracking
+      setLastPinchFactor(scaleFactor);
+      setIsPinching(true);
+      console.log(`🟢 Pinch started with factor: ${scaleFactor}`);
+      return;
+    }
+    
+    // Handle pinch end
+    if (pinchState === ViroPinchStateTypes.PINCH_END) {
+      setIsPinching(false);
+      setLastPinchFactor(1.0);
+      console.log(`🔴 Pinch ended`);
+      return;
+    }
+    
+    // Handle pinch move - this is where we apply scaling
+    if (pinchState === ViroPinchStateTypes.PINCH_MOVE && isPinching) {
+      
+      // Calculate the change in pinch factor since last frame
+      const factorDelta = scaleFactor / lastPinchFactor;
+      console.log(`📏 Factor delta: ${factorDelta} (current: ${scaleFactor}, last: ${lastPinchFactor})`);
+      
+      // Apply the delta with smoothing
+      const smoothedFactor = 1 + (factorDelta - 1) * 0.3; // Light smoothing
+      
+      console.log(`🎯 Smoothed factor: ${smoothedFactor}, will multiply scale ${scale[0]} by ${smoothedFactor}`);
+      
+      // Calculate new scale
       const newScale: [number, number, number] = [
-        scale[0] * scaleFactor, 
-        scale[1] * scaleFactor, 
-        scale[2] * scaleFactor
+        scale[0] * smoothedFactor, 
+        scale[1] * smoothedFactor, 
+        scale[2] * smoothedFactor
       ];
       
-      // Min/max scale limits to prevent the model from getting too small or too large
-      const MIN_SCALE = 0.01;
-      const MAX_SCALE = 0.5;
+      console.log(`📐 Calculated new scale: ${newScale[0]}`);
       
+      // Very generous scale limits
+      const MIN_SCALE = 0.0001;
+      const MAX_SCALE = 5.0;
+      
+      // Apply scale if within limits
       if (newScale[0] >= MIN_SCALE && newScale[0] <= MAX_SCALE) {
         setScale(newScale);
+        console.log(`✅ Scale successfully updated to: ${newScale[0]}`);
+      } else {
+        console.log(`❌ Scale ${newScale[0]} outside limits [${MIN_SCALE}, ${MAX_SCALE}]`);
       }
+      
+      // Update last pinch factor for next frame
+      setLastPinchFactor(scaleFactor);
     }
   };
 
@@ -297,77 +305,96 @@ const ARScene: React.FC<ARSceneProps> = (props) => {
     }
   };
 
-  // Handle rotation
+  // Handle rotation with improved sensitivity
   const onRotate = (rotateState: ViroRotateStateTypes, rotationFactor: number, source: ImageSourcePropType) => {
     console.log(`Rotate event: state=${rotateState}, factor=${rotationFactor}`);
     
-    // Respond to all rotation states for better responsiveness
-    if (rotateState === ViroRotateStateTypes.ROTATE_START || 
-        rotateState === ViroRotateStateTypes.ROTATE_MOVE || 
+    if (rotateState === ViroRotateStateTypes.ROTATE_START ||
+        rotateState === ViroRotateStateTypes.ROTATE_MOVE ||
         rotateState === ViroRotateStateTypes.ROTATE_END) {
       
-      const newRotation: [number, number, number] = [rotation[0], rotation[1] + rotationFactor, rotation[2]];
+      // Improved rotation with better sensitivity and smoothing
+      const sensitivity = 45; // Degrees per unit (was ~57.3)
+      const smoothedRotation = rotationFactor * 0.7; // Dampen by 30% for smoother rotation
+      
+      const newRotation: [number, number, number] = [
+        rotation[0], 
+        rotation[1] + (smoothedRotation * sensitivity),
+        rotation[2]
+      ];
+      
       setRotation(newRotation);
     }
   };
 
+  // Handle double-tap to reset model (integrated with pinch gesture)
+  const handleDoubleTapReset = () => {
+    const now = Date.now();
+    if (now - lastTapTime < 400) { // Double tap detected within 400ms
+      console.log('Double-tap detected - resetting model');
+      
+      // Reset to initial state
+      setPosition([0, -0.5, -1]);
+      setRotation([0, 0, 0]);
+      setScale(initialScale);
+      
+      return true; // Indicate reset was triggered
+    }
+    setLastTapTime(now);
+    return false; // No reset triggered
+  };
+
+  // Handle mesh loading event
+  const handleMeshesLoaded = (event: NativeSyntheticEvent<ViroMeshLoadedEvent>) => {
+    const loadedMeshNames = event.nativeEvent.meshNames;
+    console.log('Meshes loaded:', loadedMeshNames);
+    setMeshNames(loadedMeshNames);
+    handleLoadMeshMaterials(loadedMeshNames);
+  };
+
   return (
     <ViroARScene>
-      <ViroAmbientLight color="#ffffff" intensity={200} />
+      <ViroAmbientLight color="#ffffff" intensity={200}/>
       <ViroSpotLight
+        innerAngle={5}
+        outerAngle={25}
+        direction={[0, -1, 0]}
         position={[0, 3, 0]}
         color="#ffffff"
-        direction={[0, -1, 0]}
-        attenuationStartDistance={5}
-        attenuationEndDistance={10}
-        innerAngle={5}
-        outerAngle={20}
-        castsShadow={true}
+        intensity={500}
       />
-      <ViroNode position={[0, -1, -3]}>
-        <ViroAmbientLight color="#ffffff" intensity={200}/>
-        <ViroSpotLight
-          innerAngle={5}
-          outerAngle={25}
-          direction={[0, -1, 0]}
-          position={[0, 3, 0]}
-          color="#ffffff"
-          intensity={500}
-        />
-        <ViroSpotLight
-          innerAngle={5}
-          outerAngle={25}
-          direction={[0, 0, -1]}
-          position={[0, 0, 3]}
-          color="#ffffff"
-          intensity={500}
-        />
-        <Viro3DObject
-          source={{ uri: props.sceneNavigator.viroAppProps.modelUri }}
-          type="GLB"
+      <ViroSpotLight
+        innerAngle={5}
+        outerAngle={25}
+        direction={[0, 0, -1]}
+        position={[0, 0, 3]}
+        color="#ffffff"
+        intensity={500}
+      />
+        
+        <ViroNode
           scale={scale}
           position={position}
           rotation={rotation}
-          materials={meshMaterials}
-          highAccuracyEvents={true}
-          dragType="FixedToWorld"
-          onDrag={onDrag}
           onPinch={onPinch}
+          onDrag={onDrag}
           onRotate={onRotate}
-          onError={(event: NativeSyntheticEvent<any>) => {
-            console.log('Model error:', event.nativeEvent);
-            handleError(event);
-          }}
-          onLoadStart={() => {
-            console.log('Model load starting');
-            handleLoadStart();
-          }}
-          onLoadEnd={() => {
-            console.log('Model load complete');
-            handleLoadEnd();
-          }}
-        />
-      </ViroNode>
+          dragType="FixedToWorld"
+        >
+          <Viro3DObject
+            source={{ uri: modelUri }}
+            type="GLB"
+            scale={[1, 1, 1]}
+            position={[0, 0, 0]}
+            rotation={[0, 0, 0]}
+            materials={materials}
+            highAccuracyEvents={true}
+            onError={handleError}
+            onLoadStart={handleLoadStart}
+            onLoadEnd={handleLoadEnd}
+
+          />
+        </ViroNode>
     </ViroARScene>
   );
 };
@@ -375,12 +402,11 @@ const ARScene: React.FC<ARSceneProps> = (props) => {
 // Main ViroARScreen component
 const ViroARScreen = () => {
   const router = useRouter();
+  const [localModelUri, setLocalModelUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [localModelUri, setLocalModelUri] = useState<string | null>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
   const params = useLocalSearchParams();
   const modelUri = params.modelUri as string;
   const mounted = useRef(true);
@@ -389,6 +415,7 @@ const ViroARScreen = () => {
     // Cleanup function
     return () => {
       mounted.current = false;
+      console.log('ViroARScreen cleanup completed');
     };
   }, []);
 
@@ -466,28 +493,8 @@ const ViroARScreen = () => {
     }
   };
 
-  const handleBack = async () => {
-    if (isNavigating) return;
-    try {
-      setIsNavigating(true);
-      
-      // First cleanup state
-      setLocalModelUri(null);
-      setError(null);
-      setIsLoading(false);
-      setIsDownloading(false);
-      setDownloadProgress(0);
-      
-      // Add debouncing timeout before navigation
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Use router.back() instead of replace to properly handle the navigation stack
-      router.back();
-    } catch (error) {
-      console.error('Navigation error:', error);
-    } finally {
-      setIsNavigating(false);
-    }
+  const handleBack = () => {
+    router.back();
   };
 
   if (!localModelUri && !isDownloading && !error) {
@@ -509,8 +516,6 @@ const ViroARScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Custom back button removed to fix crash */}
-      
       {localModelUri && (
         <ViroARSceneNavigator
           autofocus={true}
@@ -530,6 +535,17 @@ const ViroARScreen = () => {
           style={styles.arView}
         />
       )}
+
+      {/* Back button */}
+      <View style={styles.backButtonContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleBack}
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+      </View>
 
       {(isLoading || isDownloading) && (
         <LoadingIndicator
@@ -601,6 +617,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10,
   },
+  backButtonContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 1000,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 25,
+    padding: 5,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
   buttonContainer: {
     position: 'absolute',
     top: 40,
@@ -632,4 +671,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
 });

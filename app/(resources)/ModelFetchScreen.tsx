@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 
 // Define model types
@@ -31,19 +31,9 @@ const ModelFetchScreen = () => {
   const [scanLoading, setScanLoading] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   
-  // Camera permission and device
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const device = useCameraDevice('back');
-  
-  // Code scanner setup with debounce
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr'],
-    onCodeScanned: (codes) => {
-      if (codes.length > 0 && !scanned && !scanLoading && codes[0].value) {
-        handleBarCodeScanned(codes[0].value);
-      }
-    }
-  });
+  // Camera permission
+  const [permission, requestPermission] = useCameraPermissions();
+  const hasPermission = permission?.granted;
 
   // Handle QR code scanning with debounce
   const handleBarCodeScanned = async (data: string) => {
@@ -371,7 +361,7 @@ const ModelFetchScreen = () => {
               <ActivityIndicator size="large" color="#bcba40" />
               <Text style={styles.scannerLoadingText}>Processing QR code...</Text>
             </View>
-          ) : !device || !hasPermission ? (
+          ) : !hasPermission ? (
             <View style={styles.permissionContainer}>
               <Text style={styles.permissionText}>
                 Camera permission is required to scan QR codes
@@ -384,11 +374,17 @@ const ModelFetchScreen = () => {
               </TouchableOpacity>
             </View>
           ) : (
-            <Camera
+            <CameraView
               style={StyleSheet.absoluteFillObject}
-              device={device}
-              isActive={showScanner && !scanned}
-              codeScanner={codeScanner}
+              facing="back"
+              barcodeScannerSettings={{
+                barcodeTypes: ['qr'],
+              }}
+              onBarcodeScanned={(result) => {
+                if (!scanned && !scanLoading && result.data) {
+                  handleBarCodeScanned(result.data);
+                }
+              }}
             />
           )}
           
@@ -506,6 +502,7 @@ const ModelFetchScreen = () => {
           style={styles.button}
           // onPress={() => router.back()}
           onPress={() => router.push('/(tabs)')}
+          
         >
           <Text style={styles.buttonText}>Go Back</Text>
         </TouchableOpacity>

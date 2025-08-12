@@ -19,7 +19,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.21.01</string>
+    <string>1.21.5</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -73,8 +73,10 @@
     </array>
     <key>UIRequiresFullScreen</key>
     <false/>
+    <key>UIStatusBarHidden</key>
+    <true/>
     <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleDefault</string>
+    <string>UIStatusBarStyleDarkContent</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>

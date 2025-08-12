@@ -128,6 +128,14 @@ export default function ModalScreen() {
           <Text style={[styles.contentText, { fontSize, lineHeight: fontSize * 1.5 }]}>
             If we are not able to resolve the issue to your satisfaction, you have the right to apply to the Information Commissioner's Office (ICO). They can be contacted at: https://ico.org.uk/
           </Text>
+          <TouchableOpacity 
+            style={styles.supportLink} 
+            onPress={() => Linking.openURL('https://universityofsussex.eu.qualtrics.com/jfe/form/SV_egtaH07LwYrxuvP')}
+          >
+            <Text style={[styles.supportLinkText, { fontSize, lineHeight: fontSize * 1.5 }]}>
+             Feedback form 
+            </Text>
+          </TouchableOpacity>
           {/* Support contact information already added above */}
         </ScrollView>
       </View>

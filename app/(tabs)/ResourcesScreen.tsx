@@ -94,12 +94,12 @@ export default function ResourcesScreen() {
         </View>
   
         <View style={[boxBorderStyle]}>
-          <Pressable onPress={() => WebBrowser.openBrowserAsync('https://universityofsussex.eu.qualtrics.com/jfe/form/SV_egtaH07LwYrxuvP')}>
+          <Pressable onPress={() => WebBrowser.openBrowserAsync('http://microscopy.bsms.ac.uk')}>
             <Image 
-              source={require('../../assets/images/interfaceIcons_Artboard19.png')} 
+              source={require('../../assets/images/interfaceIcons_Artboard40.png')} 
               style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
             />
-            <Text style={styles.titleText}>Feedback form</Text>
+            <Text style={styles.titleText}>Microscopy</Text>
           </Pressable>
         </View>
       </View>

@@ -17,7 +17,7 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 /android
-/ios
+# /ios - Commented out for Xcode Cloud compatibility
 
 # Metro
 .metro-health-check*

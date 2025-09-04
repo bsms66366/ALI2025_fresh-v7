@@ -1,92 +1,164 @@
 {
-  "id": "ali2025-project-structure",
-  "type": "diagram",
-  "properties": {
-    "title": "ALI2025 Project Structure",
-    "description": "Visualization of the ALI2025 React Native/Expo application structure"
-  },
-  "nodes": [
-    {
-      "id": "root",
-      "type": "container",
-      "label": "ALI2025",
-      "children": [
-        {
-          "id": "app",
-          "type": "container",
-          "label": "app/",
-          "children": [
-            {
-              "id": "ar",
-              "type": "container",
-              "label": "(ar)/",
-              "children": [
-                {"id": "viro-ar", "label": "ViroARScreen.tsx"},
-                {"id": "ar-layout", "label": "_layout.tsx"}
-              ]
-            },
-            {
-              "id": "courses",
-              "type": "container",
-              "label": "(courses)/",
-              "children": [
-                {"id": "biomed", "label": "BioMedScreen.tsx"},
-                {"id": "health", "label": "HealthProfScreen.tsx"},
-                {"id": "medneuro", "label": "MedNeuroScreen.tsx"},
-                {"id": "pa", "label": "PAScreen.tsx"}
-              ]
-            }
-          ]
-        },
-        {
-          "id": "components",
-          "type": "container",
-          "label": "components/",
-          "description": "Reusable UI components"
-        },
-        {
-          "id": "assets",
-          "type": "container",
-          "label": "assets/",
-          "children": [
-            {"id": "models", "label": "3D Models", "description": "GLB/GLTF files"}
-          ]
-        },
-        {
-          "id": "data",
-          "type": "container",
-          "label": "data/",
-          "description": "Application data and content"
-        }
-      ]
-    }
-  ],
-  "edges": [
-    {
-      "from": "app",
-      "to": "components",
-      "type": "uses",
-      "label": "imports"
-    },
-    {
-      "from": "ar",
-      "to": "assets",
-      "type": "uses",
-      "label": "loads"
-    }
-  ],
-  "styles": {
-    "container": {
-      "shape": "rectangle",
-      "padding": 10,
-      "borderRadius": 5,
-      "backgroundColor": "#f5f5f5",
-      "borderColor": "#333333"
-    },
-    "edge": {
-      "stroke": "#666666",
-      "strokeWidth": 1,
-      "arrow": true
-    }
-  }
+	"id": "ali2025-project-structure",
+	"type": "diagram",
+	"properties": {
+		"title": "ALI2025 Project Structure",
+		"description": "Visualization of the ALI2025 React Native/Expo application structure"
+	},
+	"nodes": [
+		{
+			"id": "root",
+			"type": "container",
+			"label": "ALI2025",
+			"children": [
+				{
+					"id": "app",
+					"type": "container",
+					"label": "app/",
+					"children": [
+						{ "id": "ar", "type": "container", "label": "(ar)/" },
+						{ "id": "courses", "type": "container", "label": "(courses)/" },
+						{ "id": "modules", "type": "container", "label": "(modules)/" },
+						{ "id": "resources", "type": "container", "label": "(resources)/" },
+						{ "id": "tabs", "type": "container", "label": "(tabs)/" },
+						{ "id": "videos", "type": "container", "label": "(videos)/" },
+						{ "id": "html", "label": "+html.tsx" },
+						{ "id": "notfound", "label": "+not-found.tsx" },
+						{ "id": "layout", "label": "_layout.tsx" },
+						{ "id": "modal", "label": "modal.tsx" },
+						{ "id": "modelselector", "label": "model-selector.tsx" },
+						{ "id": "config", "type": "container", "label": "config/" }
+					]
+				},
+				{
+					"id": "components",
+					"type": "container",
+					"label": "components/",
+					"children": [
+						{ "id": "EditScreenInfo", "label": "EditScreenInfo.tsx" },
+						{ "id": "ExternalLink", "label": "ExternalLink.tsx" },
+						{ "id": "MarkerARScreen", "label": "MarkerARScreen.tsx" },
+						{ "id": "StyledText", "label": "StyledText.tsx" },
+						{ "id": "Themed", "label": "Themed.tsx" },
+						{ "id": "modelConfig", "label": "modelConfig.ts" },
+						{ "id": "useClientOnlyValue", "label": "useClientOnlyValue.ts" },
+						{ "id": "useClientOnlyValueWeb", "label": "useClientOnlyValue.web.ts" },
+						{ "id": "useColorScheme", "label": "useColorScheme.ts" },
+						{ "id": "useColorSchemeWeb", "label": "useColorScheme.web.ts" },
+						{ "id": "useTheme", "label": "useTheme.ts" },
+						{ "id": "tests", "type": "container", "label": "__tests__/" },
+						{ "id": "screens", "type": "container", "label": "screens/" }
+					]
+				},
+				{
+					"id": "screens",
+					"type": "container",
+					"label": "screens/",
+					"children": [
+						{ "id": "ARScreen", "label": "ARScreen.tsx" }
+					]
+				},
+				{
+					"id": "assets",
+					"type": "container",
+					"label": "assets/",
+					"children": [
+						{ "id": "fonts", "type": "container", "label": "fonts/" },
+						{ "id": "images", "type": "container", "label": "images/" }
+					]
+				},
+				{
+					"id": "data",
+					"type": "container",
+					"label": "data/",
+					"children": [
+						{ "id": "AbdoPelvis", "label": "AbdoPelvis.json" },
+						{ "id": "BackLimbs", "label": "BackLimbs.json" },
+						{ "id": "ENT", "label": "ENT.json" },
+						{ "id": "Embryology", "label": "Embryology.json" },
+						{ "id": "HeadNeck", "label": "HeadNeck.json" },
+						{ "id": "Introductions", "label": "Introductions.json" },
+						{ "id": "StatusBarSize", "label": "StatusBarSize.js" },
+						{ "id": "Thorax", "label": "Thorax.json" },
+						{ "id": "Video360", "label": "Video360.json" },
+						{ "id": "publicDisplay", "label": "publicDisplay.json" }
+					]
+				}
+			]
+		}
+	]
+}
+									"label": "BioMedScreen.tsx"
+								},
+								{
+									"id": "health",
+									"label": "HealthProfScreen.tsx"
+								},
+								{
+									"id": "medneuro",
+									"label": "MedNeuroScreen.tsx"
+								},
+								{
+									"id": "pa",
+									"label": "PAScreen.tsx"
+								}
+							]
+						}
+					]
+				},
+				{
+					"id": "components",
+					"type": "container",
+					"label": "components/",
+					"description": "Reusable UI components"
+				},
+				{
+					"id": "assets",
+					"type": "container",
+					"label": "assets/",
+					"children": [
+						{
+							"id": "models",
+							"label": "3D Models",
+							"description": "GLB/GLTF files"
+						}
+					]
+				},
+				{
+					"id": "data",
+					"type": "container",
+					"label": "data/",
+					"description": "Application data and content"
+				}
+			]
+		}
+	],
+	"edges": [
+		{
+			"from": "app",
+			"to": "components",
+			"type": "uses",
+			"label": "imports"
+		},
+		{
+			"from": "ar",
+			"to": "assets",
+			"type": "uses",
+			"label": "loads"
+		}
+	],
+	"styles": {
+		"container": {
+			"shape": "rectangle",
+			"padding": 10,
+			"borderRadius": 5,
+			"backgroundColor": "#f5f5f5",
+			"borderColor": "#333333"
+		},
+		"edge": {
+			"stroke": "#666666",
+			"strokeWidth": 1,
+			"arrow": true
+		}
+	}
 }

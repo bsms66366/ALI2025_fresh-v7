@@ -17,7 +17,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.cjtaylormade.ali2320",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "slido",
+          "completeanatomy",
+          "imaios"
+        ]
       }
     },
     "android": {

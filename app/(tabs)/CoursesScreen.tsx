@@ -79,12 +79,12 @@ export default function CoursesScreen() {
         </View>
   
         <View style={[boxBorderStyle]}>
-          <Pressable onPress={() => router.push('/(courses)/PubDisScreen')}>
+          <Pressable onPress={() => router.push('/(courses)/BiomedengScreen')}>
             <Image 
-              source={require('@/assets/images/interfaceIcons_Artboard24.png')} 
+              source={require('@/assets/images/interfaceIcons_Artboard41.png')} 
               style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
             />
-            <Text style={styles.titleText}>Public Display</Text>
+            <Text style={styles.titleText}>Biomedical Engineering</Text>
           </Pressable>
         </View>
       </View>

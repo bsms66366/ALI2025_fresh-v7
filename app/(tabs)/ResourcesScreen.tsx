@@ -1,27 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Pressable, ViewStyle, TextStyle, ImageStyle, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, ViewStyle, TextStyle, ImageStyle, Dimensions, TouchableOpacity, Linking, Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ResourcesScreen() {
-  const { width, height } = useWindowDimensions();
-  
-  const itemWidth = (width / 3) - 45;
-  const imageSize = itemWidth * 0.55;
-
-  const boxBorderStyle: ViewStyle = {
-    width: itemWidth,
-    aspectRatio: 1,
+const createBoxBorderStyle = (height: number, width: number): ViewStyle => ({
+    marginTop: 30,
+    width: (width / 3) - 10,
+    height: '40%',
     borderColor: '#bcba40',
-    borderStyle: 'dotted' as const,
+    borderStyle: 'dotted',
     borderRadius: 8,
     borderWidth: 1,
-    margin: 10,
+    marginHorizontal: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 6,
-  };
+});
+
+export default function ResourcesScreen() {
+  const { height, width } = Dimensions.get('window');
 
   const handleStartScanning = async () => {
     try {
@@ -36,111 +32,112 @@ export default function ResourcesScreen() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* First Row */}
-      <View style={styles.row}>
-        <View style={[boxBorderStyle]}>
-          <Pressable onPress={() => WebBrowser.openBrowserAsync('https://placements.bsms.ac.uk/nova/login')}>
-            <Image 
-              source={require('@/assets/images/interfaceIcons_Artboard18.png')} 
-              style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
-            />
-            <Text style={styles.titleText}>Admin Area</Text>
-          </Pressable>
-        </View>
-  
-        <View style={[boxBorderStyle]}>
-          <Pressable onPress={() => router.push("/(resources)/PathPotsScreen" as any)}>
-            <Image 
-              source={require('../../assets/images/interfaceIcons_Artboard9.png')} 
-              style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
-            />
-            <Text style={styles.titleText}>Pathology Pots</Text>
-          </Pressable>
-        </View>
-  
-        <View style={[boxBorderStyle]}>
-        <Pressable onPress={() => WebBrowser.openBrowserAsync('https://www.spatial.io/s/BSMS-Anatomy-Department-Metaverse-63f1222446f222d934f1f54c?share=4830808449733533739')}>
-            <Image 
-              source={require('../../assets/images/interfaceIcons_Artboard37.png')} 
-              style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
-            />
-            <Text style={styles.titleText}>Anatomy Metaverse</Text>
-          </Pressable>
-        </View>
-      </View>
+  const openApp = async (appUrl: string, fallbackUrl: string, appName: string) => {
+    try {
+      const supported = await Linking.canOpenURL(appUrl);
+      if (supported) {
+        await Linking.openURL(appUrl);
+      } else {
+        Alert.alert(
+          `${appName} Not Installed`,
+          `Would you like to open ${appName} in your browser instead?`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open in Browser', onPress: () => WebBrowser.openBrowserAsync(fallbackUrl) }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error(`Error opening ${appName}:`, error);
+      WebBrowser.openBrowserAsync(fallbackUrl);
+    }
+  };
 
-      {/* Second Row */}
-      <View style={styles.row}>
-        <View style={[boxBorderStyle]}>
-          <Pressable onPress={handleStartScanning}>
-            <Image 
-              source={require('../../assets/images/interfaceIcons_Artboard39.png')} 
-              style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
-            />
+  return (
+    <View style={styles.v_container}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap' }}>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://www.clinicalkey.com/#!/browse/book/3-s2.0-C20150000041')}>
+            <Image source={require('@/assets/images/interfaceIcons_Artboard29.png')} style={styles.IconStyle} />
+            <Text style={styles.titleText}>Clinical Key</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => router.push("/(resources)/PathPotsScreen" as any)}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard9.png')} style={styles.IconStyle} />
+            <Text style={styles.titleText}>Pathology Pots</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://www.spatial.io/s/BSMS-Anatomy-Department-Metaverse-63f1222446f222d934f1f54c?share=4830808449733533739')}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard37.png')} style={styles.IconStyle} />
+            <Text style={styles.titleText}>Anatomy Metaverse</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={handleStartScanning}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard39.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}>AR Models</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
-  
-        <View style={[boxBorderStyle]}>
-          <Pressable onPress={() => WebBrowser.openBrowserAsync('https://ali.brighton.domains/360Tour/index.html')}>
-            <Image 
-              source={require('../../assets/images/interfaceIcons_Artboard28.png')} 
-              style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
-            />
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://ali.brighton.domains/360Tour/index.html')}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard28.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}>360 Lab Tour</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
-  
-        <View style={[boxBorderStyle]}>
-          <Pressable onPress={() => WebBrowser.openBrowserAsync('http://microscopy.bsms.ac.uk')}>
-            <Image 
-              source={require('../../assets/images/interfaceIcons_Artboard40.png')} 
-              style={[styles.IconStyle, { width: imageSize, height: imageSize }]} 
-            />
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('http://microscopy.bsms.ac.uk')}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard40.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}>Microscopy</Text>
-          </Pressable>
+          </TouchableOpacity>
+        </View>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => openApp('slido://', 'https://www.sli.do', 'Slido')}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard43.png')} style={styles.IconStyle} />
+            <Text style={styles.titleText}> Slido Q&A</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => openApp('completeanatomy://', 'https://3d4medical.com/complete-anatomy', 'Complete Anatomy')}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard42.png')} style={styles.IconStyle} />
+            <Text style={styles.titleText}>Complete Anatomy</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={createBoxBorderStyle(height, width)}>
+          <TouchableOpacity onPress={() => openApp('imaios://', 'https://www.imaios.com/en/imaios-dicom-viewer', 'IDV (IMAIOS)')}>
+            <Image source={require('../../assets/images/interfaceIcons_Artboard44.png')} style={styles.IconStyle} />
+            <Text style={styles.titleText}>IDV (IMAIOS)</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
   );
 }
 
-type Styles = {
-  container: ViewStyle;
-  row: ViewStyle;
-  IconStyle: ImageStyle;
-  titleText: TextStyle;
-};
-
-const styles = StyleSheet.create<Styles>({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  
+const styles = StyleSheet.create({
   IconStyle: {
-    resizeMode: 'contain',
-    alignSelf: 'center',
+    width: 110,
+    height: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    
   },
-
+  v_container: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingTop: 5,
+    backgroundColor: '#000000',
+  },
   titleText: {
     fontFamily: 'Helvetica',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#bcba40',
-    textAlign: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    //paddingLeft: 30,
+    paddingBottom:20,
   },
 });

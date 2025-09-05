@@ -27,7 +27,7 @@ export default function App() {
         <FlatList 
           data={filteredData}
           renderItem={({ item }) => (
-            <Pressable onPress={() => WebBrowser.openBrowserAsync(item.video)}>
+            <Pressable onPress={() => WebBrowser.openBrowserAsync(item.urlCode)}>
               <Text style={styles.listItem}>{item.name}</Text>
             </Pressable> 
           )}

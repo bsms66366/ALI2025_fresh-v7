@@ -21,6 +21,9 @@ export default function App() {
 
   return (
     <View style={{ flex: 1, padding: 24, backgroundColor: '#000' }}>
+       <Text style ={{color:'#FFF', fontSize: 20, MarginTop:10, marginBottom: 15, textAlign: 'center'}}>
+     POST GRADUATE MEDICINE
+      <TEXT>
       {isLoading ? (
         <ActivityIndicator />
       ) : (

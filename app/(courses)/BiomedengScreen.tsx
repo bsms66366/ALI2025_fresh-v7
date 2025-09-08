@@ -1,62 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text, FlatList, Pressable, Image } from 'react-native';
+import { View, ActivityIndicator, Text, Pressable, FlatList } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import { router } from 'expo-router';
 import axios from 'axios';
 
-export default function App() {
+interface Note {
+  category_id: number;
+  name: string;
+  urlCode: string;
+}
 
+export default function BiomedengScreen() {
   const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<Note[]>([]);
   const filteredData = data.filter(item => item.category_id === 59);
 
   useEffect(() => {
-    axios.get('https://placements.bsms.ac.uk/api/Biomedeng')
+    axios
+      .get<Note[]>('https://placements.bsms.ac.uk/api/Notes')
       .then(({ data }) => {
         console.log(data);
-        setData(data)
+        setData(data);
       })
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 15, backgroundColor: '#000' }}>
-      <Image source={require('../../assets/images/interfaceIcons_Artboard41.png')} style={{ width: 250, height: 250, justifyContent: 'center' }} />
-      <Text style={{ color: '#FFF', fontSize: 20, marginTop: 10, marginBottom:15, textAlign:"center"}}>BIOMEDICAL ENGINEERING</Text>
-      {isLoading ? <ActivityIndicator /> : (
-        <FlatList 
+    <View style={{ flex: 1, padding: 24, backgroundColor: '#000' }}>
+      
+      <Text style={{ color: '#FFF', fontSize: 20, marginTop: 10, marginBottom: 15, textAlign: 'center' }}>
+        BIOMEDICAL ENGINEERING
+      </Text>
+      {isLoading ? (
+        <ActivityIndicator />
+      ) : (
+        <FlatList
           data={filteredData}
           renderItem={({ item }) => (
             <Pressable onPress={() => WebBrowser.openBrowserAsync(item.urlCode)}>
-              <Text style={styles.listItem}>{item.name}</Text>
-            </Pressable> 
+              <Text
+                style={{
+                  flex: 1,
+                  color: '#bcba40',
+                  backgroundColor: '#000',
+                  borderColor: '#bcba40',
+                  borderStyle: 'dotted',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  padding: 8,
+                  marginVertical: 5,
+                  marginHorizontal: 8,
+                  marginBottom: 5,
+                }}
+              >
+                {item.name}
+              </Text>
+            </Pressable>
           )}
+          keyExtractor={(item, index) => index.toString()}
         />
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  listItem: {
-    flex: 1,  
-    color: '#bcba40',
-    backgroundColor: '#000',
-    borderColor: '#bcba40',
-    borderStyle: 'dotted',
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 8,
-    marginVertical: 5,
-    marginHorizontal: 8,
-    marginBottom: 5
-  },
-  Logo: {
-    height: 80,
-    alignItems: 'center',
-  }
-});

@@ -3,9 +3,15 @@ import { View, ActivityIndicator, Text, Pressable, FlatList } from 'react-native
 import * as WebBrowser from 'expo-web-browser';
 import axios from 'axios';
 
-export default function App() {
+interface NoteItem {
+  category_id: number;
+  name: string;
+  urlCode: string;
+}
+
+export default function BioMedScreen() {
   const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<NoteItem[]>([]);
   const filteredData = data.filter(item => item.category_id === 15);
 
   useEffect(() => {
@@ -21,9 +27,9 @@ export default function App() {
 
   return (
     <View style={{ flex: 1, padding: 24, backgroundColor: '#000' }}>
-     <Text style ={{color:'#FFF', fontSize: 20, MarginTop:10, marginBottom: 15, textAlign: 'center'}}>
+     <Text style ={{color:'#FFF', fontSize: 20, marginTop:10, marginBottom: 15, textAlign: 'center'}}>
       BIOMEDICAL SCIENCE
-      <TEXT>
+      </Text>
       {isLoading ? (
         <ActivityIndicator />
       ) : (

@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function App() {
 
   const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const filteredData = data.filter(item => item.category_id === 18);
 
   useEffect(() => {

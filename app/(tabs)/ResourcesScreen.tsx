@@ -34,30 +34,103 @@ export default function ResourcesScreen() {
 
   const openApp = async (appUrl: string, fallbackUrl: string, appName: string) => {
     try {
-      const supported = await Linking.canOpenURL(appUrl);
-      if (supported) {
-        await Linking.openURL(appUrl);
-      } else {
-        Alert.alert(
-          `${appName} Not Installed`,
-          `Would you like to open ${appName} in your browser instead?`,
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open in Browser', onPress: () => WebBrowser.openBrowserAsync(fallbackUrl) }
-          ]
-        );
-      }
+      // Try to open the app directly first
+      await Linking.openURL(appUrl);
     } catch (error) {
-      console.error(`Error opening ${appName}:`, error);
-      WebBrowser.openBrowserAsync(fallbackUrl);
+      // If opening the app fails, then show the fallback options
+      console.log(`${appName} not available, showing fallback options:`, error);
+      Alert.alert(
+        `${appName} Not Available`,
+        `Would you like to open ${appName} in your browser instead?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open in Browser', onPress: () => WebBrowser.openBrowserAsync(fallbackUrl) }
+        ]
+      );
     }
+  };
+
+  const handleImaiosApp = async () => {
+    Alert.alert(
+      'IDV (IMAIOS) DICOM Viewer',
+      'Choose how you want to access IDV:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Open Installed App', 
+          onPress: () => {
+            Alert.alert(
+              'Open IDV App',
+              'Please manually open the IDV app from your home screen. The app cannot be opened directly from this interface due to iOS security restrictions.',
+              [{ text: 'OK' }]
+            );
+          }
+        },
+        { text: 'App Store', onPress: () => Linking.openURL('https://apps.apple.com/app/id1444841062') }
+      ]
+    );
+  };
+
+  const handleSlidoApp = async () => {
+    // Try common Slido URL schemes first
+    const slidoSchemes = ['slido://', 'com.slido.app://', 'sli.do://'];
+    
+    for (const scheme of slidoSchemes) {
+      try {
+        await Linking.openURL(scheme);
+        return; // If successful, stop here
+      } catch (error) {
+        // Continue to next scheme
+      }
+    }
+    
+    // If all schemes fail, show dialog
+    Alert.alert(
+      'Slido Q&A',
+      'Choose how you want to access Slido:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Open Installed App', 
+          onPress: () => {
+            Alert.alert(
+              'Open Slido App',
+              'Please manually open the Slido app from your home screen. The app cannot be opened directly from this interface due to iOS security restrictions.',
+              [{ text: 'OK' }]
+            );
+          }
+        },
+        { text: 'App Store', onPress: () => Linking.openURL('https://apps.apple.com/app/id954596240') }
+      ]
+    );
+  };
+
+  const handleClinicalKeyApp = async () => {
+    Alert.alert(
+      'Clinical Key',
+      'Choose how you want to access Clinical Key:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Open Installed App', 
+          onPress: () => {
+            Alert.alert(
+              'Open Clinical Key App',
+              'Please manually open the Clinical Key app from your home screen. The app cannot be opened directly from this interface due to iOS security restrictions.',
+              [{ text: 'OK' }]
+            );
+          }
+        },
+        { text: 'App Store', onPress: () => Linking.openURL('https://apps.apple.com/app/id1041998175') }
+      ]
+    );
   };
 
   return (
     <View style={styles.v_container}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap' }}>
         <View style={createBoxBorderStyle(height, width)}>
-          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://www.clinicalkey.com/#!/browse/book/3-s2.0-C20150000041')}>
+          <TouchableOpacity onPress={handleClinicalKeyApp}>
             <Image source={require('@/assets/images/interfaceIcons_Artboard29.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}>Clinical Key</Text>
           </TouchableOpacity>
@@ -93,7 +166,7 @@ export default function ResourcesScreen() {
           </TouchableOpacity>
         </View>
         <View style={createBoxBorderStyle(height, width)}>
-          <TouchableOpacity onPress={() => openApp('slido://', 'https://www.sli.do', 'Slido')}>
+          <TouchableOpacity onPress={handleSlidoApp}>
             <Image source={require('../../assets/images/interfaceIcons_Artboard43.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}> Slido Q&A</Text>
           </TouchableOpacity>
@@ -105,7 +178,7 @@ export default function ResourcesScreen() {
           </TouchableOpacity>
         </View>
         <View style={createBoxBorderStyle(height, width)}>
-          <TouchableOpacity onPress={() => openApp('imaios://', 'https://www.imaios.com/en/imaios-dicom-viewer', 'IDV (IMAIOS)')}>
+          <TouchableOpacity onPress={handleImaiosApp}>
             <Image source={require('../../assets/images/interfaceIcons_Artboard44.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}>IDV (IMAIOS)</Text>
           </TouchableOpacity>

@@ -111,6 +111,7 @@ export default function ModalScreen() {
               For Support please contact: BSMS Professional Services
             </Text>
           </TouchableOpacity>
+          
           <Text style={[styles.sectionTitle, {marginTop: 20}]}>Privacy Notice</Text>
           <Text style={[styles.contentText, { fontSize, lineHeight: fontSize * 1.5 }]}>
             The App automatically collects certain information when you visit, use or navigate the App. 
@@ -128,6 +129,14 @@ export default function ModalScreen() {
           <Text style={[styles.contentText, { fontSize, lineHeight: fontSize * 1.5 }]}>
             If we are not able to resolve the issue to your satisfaction, you have the right to apply to the Information Commissioner's Office (ICO). They can be contacted at: https://ico.org.uk/
           </Text>
+          <TouchableOpacity 
+            style={styles.supportLink} 
+            onPress={() => Linking.openURL('https://studentcentral.brighton.ac.uk/ultra/courses/_127494_1/outline/edit/folder/_4930722_1')}
+          >
+            <Text style={[styles.supportLinkText, { fontSize, lineHeight: fontSize * 1.5 }]}>
+             App Instructions on Student Central
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity 
             style={styles.supportLink} 
             onPress={() => Linking.openURL('https://universityofsussex.eu.qualtrics.com/jfe/form/SV_egtaH07LwYrxuvP')}
